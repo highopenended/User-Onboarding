@@ -90,7 +90,7 @@ export default function App() {
         <div className="inputGroup">
           <label htmlFor="username">Username:</label>
           <input id="username" name="username" type="text" placeholder="Type Username" />
-          {errors.username && <div className="validation">username is required</div>}
+          {errors.username && <div className="validation">{errors.username}</div>}
         </div>
 
         <div className="inputGroup">
