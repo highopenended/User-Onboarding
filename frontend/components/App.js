@@ -48,17 +48,17 @@ export default function App() {
   // and (5) the failure message from the server.
   const [values, setValues]=useState(getInitialValues())
   const [errors, setErrors]=useState(getInitialErrors)
-  const [serverSuccess, setServerSuccess]=useState()
-  const [serverFailure, setServerFailure]=useState()
+  const [serverSuccess, setServerSuccess]=useState('')
+  const [serverFailure, setServerFailure]=useState('')
 
 
 
   // ✨ TASK: BUILD YOUR EFFECT HERE
   // Whenever the state of the form changes, validate it against the schema
   // and update the state that tracks whether the form is submittable.
-  useEffect(()=>{
+  // useEffect(()=>{
     
-  },[values])
+  // },[values])
 
   const onChange = evt => {
     // ✨ TASK: IMPLEMENT YOUR INPUT CHANGE HANDLER
@@ -67,50 +67,69 @@ export default function App() {
     // At every change, you should validate the updated value and send the validation
     // error to the state where we track frontend validation errors.
 
-    setValues(...values,[evt.name]=evt.value)
+    // console.log(evt.target)
+    // console.log(evt.target.name)
+    // console.log(evt.target.value)
+    let {type, name, value, checked} = evt.target
+    value = type =='checkbox' ? checked : value
+    setValues({...values,[name]:value})
+
+
+    // setValues(...values,[evt.target.name]=evt.target.value)
 
   }
 
   const onSubmit = evt => {
-    // ✨ TASK: IMPLEMENT YOUR SUBMIT HANDLER
-    // Lots to do here! Prevent default behavior, disable the form to avoid
-    // double submits, and POST the form data to the endpoint. On success, reset
-    // the form. You must put the success and failure messages from the server
-    // in the states you have reserved for them, and the form
-    // should be re-enabled.
+    evt.preventDefault()
+    axios.post('https://webapis.bloomtechdev.com/registration',values)
+      .then(res=>{
+        console.log(res.data.message)
+        setServerSuccess(res.data.message)
+        setServerFailure()
+        setValues(getInitialValues())
+      })
+      .catch(err=>{
+        console.log(err.response.data.message)
+        setServerFailure(err.response.data.message)
+        setServerSuccess()
+        // setValues(getInitialValues())
+      })
   }
 
   return (
     <div> {/* TASK: COMPLETE THE JSX */}
       <h2>Create an Account</h2>
-      <form onSubmit={onsubmit}>
+      <form onSubmit={onSubmit}>
         {serverSuccess && <h4 className="success">{serverSuccess}</h4>}
         {serverFailure && <h4 className="error">{serverFailure}</h4>}
 
+        {/*  */}
         <div className="inputGroup">
           <label htmlFor="username">Username:</label>
-          <input id="username" name="username" type="text" placeholder="Type Username" />
+          <input value={values.username} onChange={onChange} id="username" name="username" type="text" placeholder="Type Username" />
           {errors.username && <div className="validation">{errors.username}</div>}
         </div>
 
+        {/* Radial Buttons */}
         <div className="inputGroup">
           <fieldset>
             <legend>Favorite Language:</legend>
             <label>
-              <input type="radio" name="favLanguage" value="javascript" />
+              <input checked={values.favLanguage=="javascript"} onChange={onChange} type="radio" name="favLanguage" value="javascript" />
               JavaScript
             </label>
             <label>
-              <input type="radio" name="favLanguage" value="rust" />
+              <input checked={values.favLanguage=="rust"} onChange={onChange} type="radio" name="favLanguage" value="rust" />
               Rust
             </label>
           </fieldset>
           {errors.favLanguage && <div className="validation">{errors.favLanguage}</div>}
         </div>
 
+        {/* Drop-Down */}
         <div className="inputGroup">
           <label htmlFor="favFood">Favorite Food:</label>
-          <select id="favFood" name="favFood">
+          <select value={values.favFood} onChange={onChange} id="favFood" name="favFood">
             <option value="">-- Select Favorite Food --</option>
             <option value="pizza">Pizza</option>
             <option value="spaghetti">Spaghetti</option>
@@ -119,9 +138,10 @@ export default function App() {
           {errors.favFood && <div className="validation">{errors.favFood}</div>}
         </div>
 
+        {/* Checkbox */}
         <div className="inputGroup">
           <label>
-            <input id="agreement" type="checkbox" name="agreement" />
+            <input checked={values.agreement} onChange={onChange} id="agreement" type="checkbox" name="agreement" />
             Agree to our terms
           </label>
           {errors.agreement && <div className="validation">{errors.agreement}</div>}
