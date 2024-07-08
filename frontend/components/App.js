@@ -23,6 +23,21 @@ const e = { // This is a dictionary of validation error messages.
 
 // ✨ TASK: BUILD YOUR FORM SCHEMA HERE
 // The schema should use the error messages contained in the object above.
+const userSchema=yup.object().shape({
+  username:yup.string().trim()
+    .required(e.usernameRequired)
+    .min(3,e.usernameMin).max(20,e.usernameMax),
+  favLanguage:yup.string().trim()
+    .required(e.favLanguageRequired)
+    .oneOf(['javascript','rust'],e.favLanguageOptions),
+    favFood:yup.string().trim()
+      .required(e.favFoodRequired)
+      .oneOf(['broccoli','spaghetti','pizza'],e.favFoodOptions),
+    agreement:yup.boolean()
+      .required(e.agreementRequired)
+      .oneOf([true],e.agreementOptions)
+})
+
 
 const getInitialValues=()=>({
   username:'',
@@ -50,15 +65,17 @@ export default function App() {
   const [errors, setErrors]=useState(getInitialErrors)
   const [serverSuccess, setServerSuccess]=useState('')
   const [serverFailure, setServerFailure]=useState('')
-
+  const [formEnabled, setFormEnabled]=useState(false)
 
 
   // ✨ TASK: BUILD YOUR EFFECT HERE
   // Whenever the state of the form changes, validate it against the schema
   // and update the state that tracks whether the form is submittable.
-  // useEffect(()=>{
-    
-  // },[values])
+  useEffect(()=>{
+    userSchema.isValid(values).then(isValid=>{
+      setFormEnabled(isValid)
+    })
+  },[values])
 
   const onChange = evt => {
     // ✨ TASK: IMPLEMENT YOUR INPUT CHANGE HANDLER
@@ -73,8 +90,9 @@ export default function App() {
     let {type, name, value, checked} = evt.target
     value = type =='checkbox' ? checked : value
     setValues({...values,[name]:value})
-
-
+    yup.reach(userSchema,name).validate(value)
+      .then(()=>setErrors({...errors,[name]:''}))
+      .catch((err)=>setErrors({...errors,[name]:err.errors}))
     // setValues(...values,[evt.target.name]=evt.target.value)
 
   }
@@ -148,7 +166,7 @@ export default function App() {
         </div>
 
         <div>
-          <input type="submit" disabled={false} />
+          <input disabled={!formEnabled} type="submit"/>
         </div>
       </form>
     </div>
